@@ -1,0 +1,40 @@
+html, body {
+  margin-left: 3em;
+  padding: 0;
+  /* background-color: #3e3e3e; */
+}
+
+canvas {
+  display: block;
+}
+
+.flex {
+  display: flex;
+}
+
+th {
+  border-bottom: 1px solid black;
+}
+
+th, td {
+  padding-left: 1em;
+  padding-right: 1em;
+  text-align: center;
+}
+
+.dicier {
+font-family: "Noto";
+/* font-feature-settings: “liga” 1, “kern” 1, “calt” 1, "cv26"; */
+}
+
+.section {
+  display: flex;
+}
+
+#card-list {
+  height: 380px;
+  overflow-y: scroll;
+  margin-left: 10%;
+  padding-left: 3%;
+  list-style-type: none;
+}

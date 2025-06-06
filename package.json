@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "graph": "yarn parcel graph.html"
+  },
+  "dependencies": {
+    "@types/p5": "^1.7.6",
+    "csv": "^6.1.0",
+    "http-server": "^14.1.1",
+    "parcel": "2.7.0",
+    "plotly.js-dist": "^2.12.1"
+  },
+  "devDependencies": {
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.4"
+  }
+}

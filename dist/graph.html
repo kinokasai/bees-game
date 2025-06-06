@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Graphs</title>
+
+  <link rel="stylesheet" type="text/css" href="/graph.3a01df49.css">
+<script type="importmap">
+    {
+        "imports": {
+            "plotly.js-dist": "https://cdn.plot.ly/plotly-2.12.1.min.js"
+        }
+    }
+</script>
+
+  <!-- <script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script> -->
+</head>
+
+<body>
+  <table>
+    <tr class="header">
+      <th>Categories</th>
+      <th>Card Total</th>
+      <th>Goal</th>
+      <th>60 Goal</th>
+    </tr>
+    <tr>
+      <td>money</td>
+      <td id="money-total"></td>
+      <td id="money-goal"></td>
+      <td id="money-60-goal"></td>
+    </tr>
+    <tr>
+      <td>burst-money</td>
+      <td id="burst-money-total"></td>
+      <td id="burst-money-goal"></td>
+      <td id="burst-money-60-goal"></td>
+    </tr>
+    <tr>
+      <td>slow-money</td>
+      <td id="slow-money-total"></td>
+      <td id="slow-money-goal"></td>
+      <td id="slow-money-60-goal"></td>
+    </tr>
+    <tr>
+      <td>removal</td>
+      <td id="removal-total"></td>
+      <td id="removal-goal"></td>
+      <td id="removal-60-goal"></td>
+    </tr>
+    <tr>
+      <td>draw</td>
+      <td id="draw-total"></td>
+      <td id="draw-goal"></td>
+      <td id="draw-60-goal"></td>
+    </tr>
+    <tr>
+      <td>house</td>
+      <td id="house-total"></td>
+      <td id="house-goal"></td>
+      <td id="house-60-goal"></td>
+    </tr>
+    <tr>
+      <td>recursion</td>
+      <td id="recursion-total"></td>
+      <td id="recursion-goal"></td>
+      <td id="recursion-60-goal"></td>
+    </tr>
+    <tr> <td colspan="4"> <hr> </td> </tr>
+    <tr>
+      <td>artifact</td>
+      <td id="artifact-total"></td>
+      <td id="artifact-goal"></td>
+      <td id="artifact-60-goal"></td>
+    </tr>
+    <tr>
+      <td>human</td>
+      <td id="human-total"></td>
+      <td id="human-goal"></td>
+      <td id="human-60-goal"></td>
+    </tr>
+    <tr>
+      <td>spell</td>
+      <td id="spell-total"></td>
+      <td id="spell-goal"></td>
+      <td id="spell-60-goal"></td>
+    </tr>
+    <tr> <td colspan="4"> <hr> </td> </tr>
+    <tr>
+      <td>scry</td>
+      <td id="scry-total"></td>
+      <td id="scry-goal"></td>
+      <td id="scry-60-goal"></td>
+    </tr>
+    <tr>
+      <td>total</td>
+      <td id="card-total"></td>
+    </tr>
+  </table>
+  <h4 id="unique-card-count">Unique Cards: </h4>
+  <div id="repartition"></div>
+  <h3>Effect repartition</h3>
+  <div style="display: flex">
+    <span id="rep"></span>
+  </div>
+  <script src="/graph.9ee818f3.js" defer=""></script>
+</body>
+</html>

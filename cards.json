@@ -1,0 +1,262 @@
+[
+{
+  "num": 1,
+  "family": "diamonds",
+  "name": "Abricot"
+},
+{
+  "num": 1,
+  "family": "spades",
+  "name": "Agathe"
+},
+{
+  "num": 1,
+  "family": "clubs",
+  "name": "Aspirateur"
+},
+{
+  "num": 1,
+  "family": "hearts",
+  "name": "Asticot"
+},
+{
+  "num": 2,
+  "family": "clubs",
+  "name": "Balai"
+},
+{
+  "num": 2,
+  "family": "diamonds",
+  "name": "Banane"
+},
+{
+  "num": 2,
+  "family": "hearts",
+  "name": "Belette"
+},
+{
+  "num": 2,
+  "family": "spades",
+  "name": "Bismuth"
+},
+{
+  "num": 3,
+  "family": "hearts",
+  "name": "Canard"
+},
+{
+  "num": 3,
+  "family": "clubs",
+  "name": "Casserole"
+},
+{
+  "num": 3,
+  "family": "spades",
+  "name": "Citrite"
+},
+{
+  "num": 3,
+  "family": "diamonds",
+  "name": "Citron"
+},
+{
+  "num": 4,
+  "family": "hearts",
+  "name": "Dauphin"
+},
+{
+  "num": 4,
+  "family": "spades",
+  "name": "Diamant"
+},
+{
+  "num": 4,
+  "family": "diamonds",
+  "name": "Durian"
+},
+{
+  "num": 4,
+  "family": "clubs",
+  "name": "Dés"
+},
+{
+  "num": 6,
+  "family": "spades",
+  "name": "Falaise"
+},
+{
+  "num": 6,
+  "family": "hearts",
+  "name": "Faon"
+},
+{
+  "num": 6,
+  "family": "clubs",
+  "name": "Fourchette"
+},
+{
+  "num": 6,
+  "family": "diamonds",
+  "name": "Framboise"
+},
+{
+  "num": 7,
+  "family": "hearts",
+  "name": "Girafe"
+},
+{
+  "num": 7,
+  "family": "diamonds",
+  "name": "Grenade"
+},
+{
+  "num": 7,
+  "family": "spades",
+  "name": "Grenat"
+},
+{
+  "num": 7,
+  "family": "clubs",
+  "name": "Guitare"
+},
+{
+  "num": 8,
+  "family": "clubs",
+  "name": "Hache"
+},
+{
+  "num": 8,
+  "family": "diamonds",
+  "name": "Haricots"
+},
+{
+  "num": 8,
+  "family": "spades",
+  "name": "Himalaya"
+},
+{
+  "num": 8,
+  "family": "hearts",
+  "name": "Hérisson"
+},
+{
+  "num": 9,
+  "family": "diamonds",
+  "name": "Icaque"
+},
+{
+  "num": 9,
+  "family": "hearts",
+  "name": "Iguane"
+},
+{
+  "num": 9,
+  "family": "clubs",
+  "name": "Imprimante"
+},
+{
+  "num": 10,
+  "family": "spades",
+  "name": "Jade"
+},
+{
+  "num": 10,
+  "family": "hearts",
+  "name": "Jaguar"
+},
+{
+  "num": 10,
+  "family": "clubs",
+  "name": "Jeu"
+},
+{
+  "num": 10,
+  "family": "diamonds",
+  "name": "Jujube"
+},
+{
+  "num": 11,
+  "family": "clubs",
+  "name": "Kayak"
+},
+{
+  "num": 11,
+  "family": "spades",
+  "name": "Kilimandjaro"
+},
+{
+  "num": 11,
+  "family": "diamonds",
+  "name": "Kiwi"
+},
+{
+  "num": 11,
+  "family": "hearts",
+  "name": "Koala"
+},
+{
+  "num": 12,
+  "family": "clubs",
+  "name": "Lampe"
+},
+{
+  "num": 12,
+  "family": "spades",
+  "name": "Lapis-Lazuli"
+},
+{
+  "num": 12,
+  "family": "hearts",
+  "name": "Lion"
+},
+{
+  "num": 12,
+  "family": "diamonds",
+  "name": "Litchi"
+},
+{
+  "num": 13,
+  "family": "hearts",
+  "name": "Macaque"
+},
+{
+  "num": 13,
+  "family": "diamonds",
+  "name": "Mandarine"
+},
+{
+  "num": 13,
+  "family": "clubs",
+  "name": "Marteau"
+},
+{
+  "num": 13,
+  "family": "spades",
+  "name": "Météorite"
+},
+{
+  "num": 5,
+  "family": "diamonds",
+  "name": "Échalotte"
+},
+{
+  "num": 5,
+  "family": "hearts",
+  "name": "Éléphant"
+},
+{
+  "num": 5,
+  "family": "spades",
+  "name": "Émeraude"
+},
+{
+  "num": 5,
+  "family": "clubs",
+  "name": "Étagère"
+},
+{
+  "num": 9,
+  "family": "spades",
+  "name": "Île"
+}
+]

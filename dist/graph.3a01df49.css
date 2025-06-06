@@ -1,0 +1,40 @@
+html, body {
+  margin-left: 3em;
+  padding: 0;
+}
+
+canvas {
+  display: block;
+}
+
+.flex {
+  display: flex;
+}
+
+th {
+  border-bottom: 1px solid #000;
+}
+
+th, td {
+  text-align: center;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.dicier {
+  font-family: Noto;
+}
+
+.section {
+  display: flex;
+}
+
+#card-list {
+  height: 380px;
+  margin-left: 10%;
+  padding-left: 3%;
+  list-style-type: none;
+  overflow-y: scroll;
+}
+
+/*# sourceMappingURL=graph.3a01df49.css.map */
