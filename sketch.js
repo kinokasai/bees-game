@@ -23,21 +23,6 @@ let opt_map = (v, clbk) => {
   }
 }
 
-let fam_colors = {
-  'diamonds': "#ffdfb7",
-  'hearts': "#caffbf",
-  'spades': "#e6ccb2",
-  'clubs': "#9bf6ff"
-}
-
-let rank_txt = num => {
-  if (num == '1') { return 'A'; }
-  if (num == '11') { return 'V'; }
-  if (num == '12') { return 'D'; }
-  if (num == '13') { return 'R'; }
-  return num;
-}
-
 let colorless = {
   code: "white",
   name: "colorless",
@@ -54,117 +39,111 @@ let chcol = (p, col) => {
   p.stroke(col);
 }
 
-let effects = {
-  1: "You may lead the next trick.",
-  4: "If this card is discarded, you win the trick.",
-  5: "You may switch this card with one in your sideboard.",
-  6: "You may switch the trump card with a card in your hand.",
-  7: "You may decide that your goal this round is to do 0 tricks.",
-  8: "You can inverse the rank order of cards (Ace becomes best, 13 last).",
-  10: "You can call for a card in this suit.",
+let front = { kind: "front", txt: "MOVE" }
+let rotate_r = { kind: "rotate_right", txt: "ROTATE_RIGHT" }
+let rotate_l = { kind: "rotate_left", txt: "ROTATE_LEFT" }
+let turn_l = { kind: "turn_left", txt: "TURN_LEFT" }
+let turn_r = { kind: "turn_right", txt: "TURN_RIGHT" }
+let teleport = { kind: "teleport", txt: "TELEPORT" }
+let attack = { kind: "attack", txt: "ATTACK" }
+let double_front = { kind: "double_front", txt: "MOVE 2"}
+let half_turn = { kind: "half_turn", txt: "U-TURN" }
+
+let front_icon = (p) => {
+  p.push();
+  p.strokeWeight(5);
+  p.scale(1.2);
+  p.line(0, 20, 0, -20);
+  p.line(0, -20, -10, -10);
+  p.line(0, -20, 10, -10);
+  p.pop();
 }
 
-let effects_fr = {
-  1: "Vous pouvez entamer le pli suivant.",
-  4: "Si cette carte est pissée, vous remportez le pli.",
-  5: "Vous pouvez échanger cette carte contre une de vos cartes écartées.",
-  6: "Vous pouvez échanger l'atout contre une carte de votre main.",
-  7: "Vous pouvez décider que faire 0 pli permet de remporter la manche.",
-  8: "Vous pouvez échanger l'ordre des cartes (1 devient la plus forte, 13 la moins forte).",
-  10: "Vous pouvez appeler une carte dans cette couleur."
+let rotate_icon = (p) => {
+  p.push();
+  p.noFill();
+  p.arc(0, 0, 40, 40, 0, 2*p.PI - 0.5);
+  p.pop();
 }
 
-let draw_center_text = (p, txt) => {
-  p.fill('black');
-  p.textAlign(p.CENTER, p.CENTER);
-  p.textSize(80);
-  p.stroke(black);
-  p.strokeWeight(4);
-  p.textFont('Quicksand');
-  p.text(txt, hw, hh);
+let draw_board = (p, card) => {
+  p.push();
+  p.noFill();
+  let rw = 200;
+  let rh = 200;
+  let topx = hw - rw / 2;
+  let topy = hh - rh / 2;
+  let pw = rw / 4;
+  let ph = rh / 4;
+  for (let i = 0; i < 4; i++) {
+    let x = topx + i * rw / 4;
+    let y = topy + i * rh / 4;
+    p.line(x, topy, x, topy + rh);
+    p.line(topx, y, topx + rw, y);
+  }
+  p.rectMode(p.CENTER);
+  p.rect(hw, hh, rw, rh);
+  p.fill(black);
+  let x = (card.index % 4) * pw + topx;
+  let y = Math.floor(card.index / 4) * ph + topy;
+  p.rectMode(p.CORNER);
+  p.rect(x, y, pw, ph);
+  p.pop();
+  // coords
+  p.push();
+  let letters = ['A', 'B', 'C', 'D'];
+  let letter = letters[card.index % 4];
+  let num = Math.floor(card.index / 4) + 1;
+  let str = `${letter}-${num}`;
+  p.text(str, hw, hh - rh);
+  p.pop();
 }
 
 let draw_card = (p, card) => {
   chcol(p, 'black');
+  p.textSize(80);
   p.textAlign(p.CENTER, p.CENTER);
-  p.textSize(70);
-  p.strokeWeight(2);
-  // p.text(card.name, hw, hh - hh/2 - 100)
-  let img = effects_img[card.num];
-  if (card.num == 10 ) {
-    img = img(card.family)
-  }
-  if (img) {
-    let iw = 80
-    let ih = 50
-    let r = 6.5
-    p.image(img, (w - iw * r) / 2, (h - ih * r) / 2, iw * r, ih * r);
-  }
-  // let effect = effects_fr[card.num];
-  // p.textAlign(p.LEFT);
-  // p.textSize(60);
-  // p.text(effect, 100, hh + 250, 520);
-  p.strokeWeight(5);
-  p.textSize(110);
-  let x = 40;
-  let y = 30;
-  p.textAlign(p.CENTER, p.TOP);
-  let txt = rank_txt(card.num);
-  p.text(txt, 2*x, y);
-  p.image(icons[card.family], x - x / 2 , y + 100, 120, 120);
-  p.push()
-  p.translate(w - x, h - y);
-  p.rotate(p.PI);
-  p.textAlign(p.CENTER, p.TOP);
-  p.image(icons[card.family], -x/2 , y + 70, 120, 120);
-  // p.textAlign(p.RIGHT, p.BOTTOM);
-  p.text(txt,x,0);
+  let t = card.txt
+  p.text(t, hw, 100);
+  let bbox = font.textBounds(t, hw, 100);
+  p.push();
+  p.translate(bbox.x - 30, bbox.y + bbox.h / 2);
+  // rotate_icon(p);
   p.pop();
-  // p.textAlign(p.RIGHT);
-  // p.text(card.num, w - x, y);
-  // p.textAlign(p.LEFT, p.BOTTOM)
-  // p.text(card.num, x, h-y);
+  p.push();
+  p.translate(hw, h - 100);
+  p.rotate(p.PI);
+  p.text(t, 0, 0);
+  p.push();
+  p.strokeWeight(5);
+  p.translate(- bbox.w / 2 - 30, bbox.h / 4);
+  // front_icon(p);
+  p.pop();
+  p.pop();
+  draw_board(p, card);
 }
 
 const struct = p => {
   p.preload = () => {
     font = p.loadFont("assets/Raleway-variable.ttf");
     icons = {
-      hearts: p.loadImage("assets/icons/hearts.png"),
-      spades: p.loadImage("assets/icons/spades.png"),
-      diamonds: p.loadImage("assets/icons/diamonds.png"),
-      clubs: p.loadImage("assets/icons/clubs.png"),
-      call_clubs: p.loadImage('assets/call-clubs.png'),
-      call_diamonds: p.loadImage('assets/call-diamonds.png'),
-      call_hearts: p.loadImage('assets/call-hearts.png'),
-      call_spades: p.loadImage('assets/call-spades.png'),
-      change_trump: p.loadImage('assets/change-trump.png'),
-      switch_board: p.loadImage('assets/change-with-board.png'),
-      discard_win: p.loadImage('assets/discard-win.png'),
-      king_killer: p.loadImage('assets/king-killer.png'),
-      market_get_2: p.loadImage('assets/market-get-2.png'),
-      no_tricks_win: p.loadImage('assets/no-tricks-win.png'),
-      inverse_rank: p.loadImage('assets/rank_inverse.png')
     }
     effects_img = {
-      1: icons.king_killer,
-      2: icons.market_get_2,
-      4: icons.discard_win,
-      5: icons.switch_board,
-      6: icons.change_trump,
-      7: icons.no_tricks_win,
-      8: icons.inverse_rank,
-      10: (suit) => {
-        if (suit == 'spades') { return icons.call_spades }
-        if (suit == 'hearts') { return icons.call_hearts }
-        if (suit == 'diamonds') { return icons.call_diamonds }
-        if (suit == 'clubs') { return icons.call_clubs }
-      }
     }
-
-
-    cards = p.loadJSON('./cards.json', cards => {
-    });
+    cards = [
+      Array.from({length: 10}).map(_ => front),
+      Array.from({length: 5}).map(_ => rotate_r),
+      Array.from({length: 5}).map(_ => rotate_l),
+      Array.from({length: 5}).map(_ => turn_l),
+      Array.from({length: 5}).map(_ => turn_r),
+      Array.from({length: 2}).map(_ => teleport),
+      Array.from({length: 8}).map(_ => attack),
+      Array.from({length: 4}).map(_ => double_front),
+      Array.from({length: 4}).map(_ => half_turn),
+    ]
+      .flat()
+      .map((v, i) => { return {...v, index: i % 16}});
+    console.log(cards);
   }
 
   p.setup = () => {
@@ -173,18 +152,17 @@ const struct = p => {
     gray.setAlpha(200);
     trwhite = p.color(0xff,0xff,0xff, 200);
     trsprt = p.color(0, 0, 0, 255);
+    p.textFont(font);
     bufs = [p.createGraphics(w, h),
       p.createGraphics(w, h)]
 
   };
 
   p.draw = () => {
-    p.textFont("Quicksand");
     let card = cards[window.index];
     // let color = fam_colors[card.family]
     p.fill(white);
     p.rect(0, 0, w, h);
-    console.log(card);
     draw_card(p,card);
   }
 
