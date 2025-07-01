@@ -39,110 +39,153 @@ let chcol = (p, col) => {
   p.stroke(col);
 }
 
-let front = { kind: "front", txt: "MOVE" }
-let rotate_r = { kind: "rotate_right", txt: "ROTATE_RIGHT" }
-let rotate_l = { kind: "rotate_left", txt: "ROTATE_LEFT" }
-let turn_l = { kind: "turn_left", txt: "TURN_LEFT" }
-let turn_r = { kind: "turn_right", txt: "TURN_RIGHT" }
-let teleport = { kind: "teleport", txt: "TELEPORT" }
-let attack = { kind: "attack", txt: "ATTACK" }
-let double_front = { kind: "double_front", txt: "MOVE 2"}
-let half_turn = { kind: "half_turn", txt: "U-TURN" }
-
-let front_icon = (p) => {
-  p.push();
-  p.strokeWeight(5);
-  p.scale(1.2);
-  p.line(0, 20, 0, -20);
-  p.line(0, -20, -10, -10);
-  p.line(0, -20, 10, -10);
-  p.pop();
-}
-
-let rotate_icon = (p) => {
-  p.push();
-  p.noFill();
-  p.arc(0, 0, 40, 40, 0, 2*p.PI - 0.5);
-  p.pop();
-}
-
-let draw_board = (p, card) => {
-  p.push();
-  p.noFill();
-  let rw = 200;
-  let rh = 200;
-  let topx = hw - rw / 2;
-  let topy = hh - rh / 2;
-  let pw = rw / 4;
-  let ph = rh / 4;
-  for (let i = 0; i < 4; i++) {
-    let x = topx + i * rw / 4;
-    let y = topy + i * rh / 4;
-    p.line(x, topy, x, topy + rh);
-    p.line(topx, y, topx + rw, y);
+let suits = ['coeur', 'pique', 'carreau', 'trefle']
+let order = ['croissant', 'décroissant']
+let rules = {}
+for (let i = 0; i < suits.length; i++) {
+  for (let j = 0; j < order.length; j++) {
+    let id = `${suits[i]}-${order[j]}`;
+    let effect = `${order[j]}, atout ${suits[i]}`;
+    rules[id] = effect
   }
-  p.rectMode(p.CENTER);
-  p.rect(hw, hh, rw, rh);
+}
+suits = ['hearts', 'spades', 'diamonds', 'clubs'];
+let numbers = Array.from({length: 9})
+  .map((_, i) => ({kind: 'number', num: i + 1}))
+  .map(v => suits.map(suit => ({...v, suit})))
+  .flat()
+
+let scores = {
+  'get-the-ace': "As: 1 -> 1pt, 2 -> 3pt, 3 -> 5pt, 4 -> win",
+  '7-wheel': "7 -> 1pt, 777 -> win",
+  tricks: '+1pt / pli',
+  pairs: '+1pt / paire',
+  sour: '2 * x = 3pt, 3 * x = -2pt',
+  'no-tricks': '0 plis = 5 pts',
+  'avoid-5': '5 = -1 pt',
+  'avoid-2': '2 = -1pt',
+'get-4': '4 = 1pt',
+  'get-3': '3 = 1pt',
+  'get-6': '6 = 1pt',
+  diamonds: 'x carreaux = x pts',
+  chevre: "Chaque pli gagné dans ce monde = -2pts",
+  triples: 'Chaque triple vaut 3 points',
+  421: "Chaque instance d'un triplé 4-2-1 vaut 4 points."
+}
+
+let added_rules = {
+  'crazy-8': 'cartes doivent matcher soit nombre ou couleur, dernière carte gagne',
+  'biggest-wins-simult': 'Jouez en même temps, la carte la plus haute gagne.',
+  'lowest-wins-simult': 'Jouez en même temps, la carte la plus basse gagne.',
+  'chevre': 'croissant, atout pique',
+}
+
+Object.assign(rules, added_rules);
+
+let make_world = (id, name, effect, score) => {
+  effect = rules[effect];
+  score = scores[score];
+  return ({kind: 'world', id, name, effect, score})
+}
+
+let make_world_ = (effect, score) =>
+  make_world("", "", effect, score)
+
+let worlds = [
+  make_world_('coeur-croissant', 'get-the-ace'),
+  make_world_('pique-croissant', '7-wheel'),
+  make_world_('trefle-croissant', 'avoid-2'),
+  make_world_('carreau-croissant', 'get-4'),
+  make_world_('coeur-décroissant', 'diamonds'),
+  make_world_('pique-décroissant', '421'),
+  make_world_('trefle-décroissant', 'tricks'),
+  make_world_('carreau-décroissant', 'avoid-5'),
+  make_world_('crazy-8', 'get-6'),
+  make_world_('biggest-wins-simult', 'sour'),
+  make_world_('lowest-wins-simult', 'no-tricks'),
+  make_world_('chevre', 'chevre'),
+]
+
+let portals = Array.from({length: 4})
+  .map(_ => ({kind: 'portal'}))
+
+// merge the rules here
+console.log(rules);
+
+let draw_world = (p, card) => {
+  p.textSize(50);
+  p.strokeWeight(2);
+  chcol(p, black);
+  p.textAlign(p.CENTER, p.TOP);
+  p.noFill();
+  let gap = 50;
+  let y = hh + 50;
+  p.rect(gap, y, w - 2 * gap, 200);
   p.fill(black);
-  let x = (card.index % 4) * pw + topx;
-  let y = Math.floor(card.index / 4) * ph + topy;
-  p.rectMode(p.CORNER);
-  p.rect(x, y, pw, ph);
-  p.pop();
-  // coords
+  p.text(card.effect, gap + 30, y + 20, w - 2*gap-30);
+  y += 230
+  p.noFill(black);
+  p.rect(gap, y, w - 2 * gap, 200);
+  p.fill(black);
+  p.text(card.score, gap + 30, y + 30, w - 2 * gap - 30);
+}
+
+let draw_number = (p, card) => {
   p.push();
-  let letters = ['A', 'B', 'C', 'D'];
-  let letter = letters[card.index % 4];
-  let num = Math.floor(card.index / 4) + 1;
-  let str = `${letter}-${num}`;
-  p.text(str, hw, hh - rh);
+  chcol(p, 'black');
+  p.strokeWeight(5);
+  p.textSize(110);
+  let x = 40;
+  let y = 30;
+  p.textAlign(p.CENTER, p.TOP);
+  let txt = (card.num);
+  p.text(txt, 2*x, y);
+  p.image(icons[card.suit], x - x / 2 , y + 100, 120, 120);
+  p.push()
+  p.translate(w - x, h - y);
+  p.rotate(p.PI);
+  p.textAlign(p.CENTER, p.TOP);
+  p.image(icons[card.suit], -x/2 , y + 70, 120, 120);
+  // p.textAlign(p.RIGHT, p.BOTTOM);
+  p.text(txt,x,0);
+  p.pop();
   p.pop();
 }
+
+
 
 let draw_card = (p, card) => {
-  chcol(p, 'black');
-  p.textSize(80);
-  p.textAlign(p.CENTER, p.CENTER);
-  let t = card.txt
-  p.text(t, hw, 100);
-  let bbox = font.textBounds(t, hw, 100);
-  p.push();
-  p.translate(bbox.x - 30, bbox.y + bbox.h / 2);
-  // rotate_icon(p);
-  p.pop();
-  p.push();
-  p.translate(hw, h - 100);
-  p.rotate(p.PI);
-  p.text(t, 0, 0);
-  p.push();
-  p.strokeWeight(5);
-  p.translate(- bbox.w / 2 - 30, bbox.h / 4);
-  // front_icon(p);
-  p.pop();
-  p.pop();
-  draw_board(p, card);
+  if (card.kind == 'world') {
+    draw_world(p, card);
+  } else if (card.kind == 'number') {
+    draw_number(p, card);
+  } else if (card.kind == 'portal') {
+    p.push();
+    chcol(p, black);
+    p.textSize(100);
+    p.textFont(font);
+    p.strokeWeight(5);
+    p.textAlign(p.CENTER);
+    p.text('portail', hw, hh);
+    p.pop();
+  }
 }
+
+
+
 
 const struct = p => {
   p.preload = () => {
     font = p.loadFont("assets/Raleway-variable.ttf");
     icons = {
+      hearts: p.loadImage("assets/icons/hearts.png"),
+      spades: p.loadImage("assets/icons/spades.png"),
+      diamonds: p.loadImage("assets/icons/diamonds.png"),
+      clubs: p.loadImage("assets/icons/clubs.png"),
     }
     effects_img = {
     }
-    cards = [
-      Array.from({length: 10}).map(_ => front),
-      Array.from({length: 5}).map(_ => rotate_r),
-      Array.from({length: 5}).map(_ => rotate_l),
-      Array.from({length: 5}).map(_ => turn_l),
-      Array.from({length: 5}).map(_ => turn_r),
-      Array.from({length: 2}).map(_ => teleport),
-      Array.from({length: 8}).map(_ => attack),
-      Array.from({length: 4}).map(_ => double_front),
-      Array.from({length: 4}).map(_ => half_turn),
-    ]
-      .flat()
-      .map((v, i) => { return {...v, index: i % 16}});
+    cards = portals.concat(numbers).concat(worlds);
     console.log(cards);
   }
 
@@ -152,7 +195,7 @@ const struct = p => {
     gray.setAlpha(200);
     trwhite = p.color(0xff,0xff,0xff, 200);
     trsprt = p.color(0, 0, 0, 255);
-    p.textFont(font);
+    // p.textFont(font);
     bufs = [p.createGraphics(w, h),
       p.createGraphics(w, h)]
 
