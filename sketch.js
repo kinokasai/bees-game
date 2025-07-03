@@ -1,4 +1,4 @@
-window.index = 0;
+window.index = 27;
 
 let rand_int = (max, min) => {
   min = min ? min : 0;
@@ -38,7 +38,7 @@ let colors = {
   },
   yellow: {
     id: 'yellow',
-    code: '#fbf8cc'
+    code: '#e9c46a'
   },
   pink: {
     id: 'pink',
@@ -97,12 +97,14 @@ let worlds = ["+1", "+2", "+3", "-1"]
 
 console.log(worlds);
 
-let portals = Array.from({length: 4})
-  .map(_ => ({kind: 'portal'}))
+let portals =
+  suits.map(s => ({kind: 'portal', suit: s}))
 
 let draw_world = (p, card) => {
   p.fill(colors[card.suit].code);
-  p.rect(0, 0, w, h);
+  p.rect(0,0,w,h);
+  // p.stroke(white);
+  // p.rect(20, 20, w-40, h-40, 20);
   p.textSize(70);
   p.strokeWeight(4);
   chcol(p, black);
@@ -120,6 +122,8 @@ let draw_world = (p, card) => {
   }
   p.fill(black);
   p.text(card.delta, x[card.category], y + 100);
+  p.imageMode(p.CENTER, p.CENTER);
+  p.image(icons[card.suit], 60, 60, 120, 120);
   p.push();
   p.translate(hw, hh - 100);
   let b = (card.order == 'inc') ? -1 : 1;
@@ -133,8 +137,17 @@ let draw_world = (p, card) => {
  }
 
 let draw_number = (p, card) => {
-  p.fill(colors[card.suit].code);
+  let code = colors[card.suit].code;
+  p.fill(code);
   p.rect(0, 0, w, h);
+  p.push();
+  chcol(p, white);
+  p.rect(0, 0, 150, 250, 0, 0, 20, 0);
+  p.rect(w-150, h-250, 150, 250, 20, 0, 0, 0);
+  p.noFill();
+  p.strokeWeight(50);
+  p.rect(0, 0, w, h, 50);
+  p.pop();
   p.push();
   chcol(p, 'black');
   p.strokeWeight(5);
@@ -144,12 +157,14 @@ let draw_number = (p, card) => {
   p.textAlign(p.CENTER, p.TOP);
   let txt = (card.num);
   p.text(txt, 2*x, y);
-  // p.image(icons[card.suit], x - x / 2 , y + 100, 120, 120);
+  p.imageMode(p.CORNER);
+  p.tint(code);
+  p.image(icons[card.suit], x - x / 2 , y + 100, 120, 120);
   p.push()
   p.translate(w - x, h - y);
   p.rotate(p.PI);
   p.textAlign(p.CENTER, p.TOP);
-  // p.image(icons[card.suit], -x/2 , y + 70, 120, 120);
+  p.image(icons[card.suit], -x/2 , y + 70, 120, 120);
   // p.textAlign(p.RIGHT, p.BOTTOM);
   p.text(txt,x,0);
   p.pop();
@@ -165,12 +180,12 @@ let draw_card = (p, card) => {
     draw_number(p, card);
   } else if (card.kind == 'portal') {
     p.push();
+    p.fill(colors[card.suit].code);
+    p.rect(0, 0, w, h);
     chcol(p, black);
-    p.textSize(100);
-    p.textFont(font);
-    p.strokeWeight(5);
-    p.textAlign(p.CENTER);
-    p.text('portail', hw, hh);
+    p.imageMode(p.CENTER, p.CENTER);
+    p.image(icons[card.suit], 60, 50, 120, 120);
+    p.image(icons.remote, hw, hh, 350, 350);
     p.pop();
   }
 }
@@ -185,16 +200,25 @@ const struct = p => {
       planet: p.loadImage('assets/icons/planet.png'),
       mountain: p.loadImage('assets/icons/mountain.png'),
       flower: p.loadImage('assets/icons/flower.png'),
-      arrow: p.loadImage('assets/icons/arrow.png')
-    }
+      remote: p.loadImage('assets/icons/remote.png'),
+      pink: p.loadImage('assets/icons/purple.png'),
+      blue: p.loadImage('assets/icons/blue.png'),
+      yellow: p.loadImage('assets/icons/yellow.png'),
+      green: p.loadImage('assets/icons/green.png'),
+    } 
+   
     effects_img = {
     }
     cards = portals.concat(numbers).concat(worlds);
-    cards = worlds;
     console.log(cards);
   }
 
   p.setup = () => {
+    icons.pink.filter(p.INVERT);
+    icons.yellow.filter(p.INVERT);
+    icons.green.filter(p.INVERT);
+    icons.blue.filter(p.INVERT);
+
     p.createCanvas(w, h);
     gray = p.color(170, 170, 170);
     gray.setAlpha(200);
