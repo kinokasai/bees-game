@@ -31,6 +31,25 @@ let colorless = {
   b: 0xde,
 }
 
+let colors = {
+  blue: {
+    id: 'blue',
+    code: '#8eecf5'
+  },
+  yellow: {
+    id: 'yellow',
+    code: '#fbf8cc'
+  },
+  pink: {
+    id: 'pink',
+    code: '#f1c0e8'
+  },
+  green: {
+    id: 'green',
+    code: '#b9fbc0'
+  }
+}
+
 let black = "#3d3022";
 let white = "#fff";
 
@@ -39,8 +58,8 @@ let chcol = (p, col) => {
   p.stroke(col);
 }
 
-let suits = ['coeur', 'pique', 'carreau', 'trefle']
-let order = ['croissant', 'décroissant']
+let suits = ['blue', 'green', 'yellow', 'pink']
+let order = ['inc', 'dec']
 let rules = {}
 for (let i = 0; i < suits.length; i++) {
   for (let j = 0; j < order.length; j++) {
@@ -49,38 +68,17 @@ for (let i = 0; i < suits.length; i++) {
     rules[id] = effect
   }
 }
-suits = ['hearts', 'spades', 'diamonds', 'clubs'];
-let numbers = Array.from({length: 9})
-  .map((_, i) => ({kind: 'number', num: i + 1}))
+let categories = ['flower', 'mountain', 'planet'];
+let numbers = 
+  categories.map(category => {
+    let obj = {category};
+    return [obj, obj, obj]
+  })
+  .flat()
+  .map((obj, i) => ({...obj, kind: 'number', num: i + 1}))
   .map(v => suits.map(suit => ({...v, suit})))
   .flat()
 
-let scores = {
-  'get-the-ace': "As: 1 -> 1pt, 2 -> 3pt, 3 -> 5pt, 4 -> win",
-  '7-wheel': "7 -> 1pt, 777 -> win",
-  tricks: '+1pt / pli',
-  pairs: '+1pt / paire',
-  sour: '2 * x = 3pt, 3 * x = -2pt',
-  'no-tricks': '0 plis = 5 pts',
-  'avoid-5': '5 = -1 pt',
-  'avoid-2': '2 = -1pt',
-'get-4': '4 = 1pt',
-  'get-3': '3 = 1pt',
-  'get-6': '6 = 1pt',
-  diamonds: 'x carreaux = x pts',
-  chevre: "Chaque pli gagné dans ce monde = -2pts",
-  triples: 'Chaque triple vaut 3 points',
-  421: "Chaque instance d'un triplé 4-2-1 vaut 4 points."
-}
-
-let added_rules = {
-  'crazy-8': 'cartes doivent matcher soit nombre ou couleur, dernière carte gagne',
-  'biggest-wins-simult': 'Jouez en même temps, la carte la plus haute gagne.',
-  'lowest-wins-simult': 'Jouez en même temps, la carte la plus basse gagne.',
-  'chevre': 'croissant, atout pique',
-}
-
-Object.assign(rules, added_rules);
 
 let make_world = (id, name, effect, score) => {
   effect = rules[effect];
@@ -91,46 +89,52 @@ let make_world = (id, name, effect, score) => {
 let make_world_ = (effect, score) =>
   make_world("", "", effect, score)
 
-let worlds = [
-  make_world_('coeur-croissant', 'get-the-ace'),
-  make_world_('pique-croissant', '7-wheel'),
-  make_world_('trefle-croissant', 'avoid-2'),
-  make_world_('carreau-croissant', 'get-4'),
-  make_world_('coeur-décroissant', 'diamonds'),
-  make_world_('pique-décroissant', '421'),
-  make_world_('trefle-décroissant', 'tricks'),
-  make_world_('carreau-décroissant', 'avoid-5'),
-  make_world_('crazy-8', 'get-6'),
-  make_world_('biggest-wins-simult', 'sour'),
-  make_world_('lowest-wins-simult', 'no-tricks'),
-  make_world_('chevre', 'chevre'),
-]
+let worlds = ["+1", "+2", "+3", "-1"]
+  .map(delta => categories.map(c => ({delta, category: c, kind: 'world'})))
+  .flat()
+  .map((v, i) => ({...v, suit: suits[i%4]}))
+  .map((v, i) => ({...v, order: ['inc', 'inc', 'dec'][i%3]}))
+
+console.log(worlds);
 
 let portals = Array.from({length: 4})
   .map(_ => ({kind: 'portal'}))
 
-// merge the rules here
-console.log(rules);
-
 let draw_world = (p, card) => {
-  p.textSize(50);
-  p.strokeWeight(2);
+  p.fill(colors[card.suit].code);
+  p.rect(0, 0, w, h);
+  p.textSize(70);
+  p.strokeWeight(4);
   chcol(p, black);
   p.textAlign(p.CENTER, p.TOP);
   p.noFill();
-  let gap = 50;
-  let y = hh + 50;
-  p.rect(gap, y, w - 2 * gap, 200);
+  let y = hh + 300;
+  let x = {
+    planet: hw - 200,
+    mountain: hw,
+    flower: hw + 200
+  }
+  p.imageMode(p.CENTER);
+  for (let category of Object.keys(x)) {
+    p.image(icons[category], x[category], y, 100, 100);
+  }
   p.fill(black);
-  p.text(card.effect, gap + 30, y + 20, w - 2*gap-30);
-  y += 230
-  p.noFill(black);
-  p.rect(gap, y, w - 2 * gap, 200);
-  p.fill(black);
-  p.text(card.score, gap + 30, y + 30, w - 2 * gap - 30);
-}
+  p.text(card.delta, x[card.category], y + 100);
+  p.push();
+  p.translate(hw, hh - 100);
+  let b = (card.order == 'inc') ? -1 : 1;
+  let c = (card.order == 'inc') ? '>' : '<';
+  // p.rotate((p.PI / 2) * b);
+  // p.image(icons.arrow, 0, 0, 200, 200);
+  p.textAlign(p.CENTER, p.CENTER);
+  p.textSize(200);
+  p.text(c, 0, 0);
+  p.pop();
+ }
 
 let draw_number = (p, card) => {
+  p.fill(colors[card.suit].code);
+  p.rect(0, 0, w, h);
   p.push();
   chcol(p, 'black');
   p.strokeWeight(5);
@@ -140,19 +144,19 @@ let draw_number = (p, card) => {
   p.textAlign(p.CENTER, p.TOP);
   let txt = (card.num);
   p.text(txt, 2*x, y);
-  p.image(icons[card.suit], x - x / 2 , y + 100, 120, 120);
+  // p.image(icons[card.suit], x - x / 2 , y + 100, 120, 120);
   p.push()
   p.translate(w - x, h - y);
   p.rotate(p.PI);
   p.textAlign(p.CENTER, p.TOP);
-  p.image(icons[card.suit], -x/2 , y + 70, 120, 120);
+  // p.image(icons[card.suit], -x/2 , y + 70, 120, 120);
   // p.textAlign(p.RIGHT, p.BOTTOM);
   p.text(txt,x,0);
   p.pop();
   p.pop();
+  p.imageMode(p.CENTER);
+  p.image(icons[card.category], hw, hh, 300, 300);
 }
-
-
 
 let draw_card = (p, card) => {
   if (card.kind == 'world') {
@@ -178,14 +182,15 @@ const struct = p => {
   p.preload = () => {
     font = p.loadFont("assets/Raleway-variable.ttf");
     icons = {
-      hearts: p.loadImage("assets/icons/hearts.png"),
-      spades: p.loadImage("assets/icons/spades.png"),
-      diamonds: p.loadImage("assets/icons/diamonds.png"),
-      clubs: p.loadImage("assets/icons/clubs.png"),
+      planet: p.loadImage('assets/icons/planet.png'),
+      mountain: p.loadImage('assets/icons/mountain.png'),
+      flower: p.loadImage('assets/icons/flower.png'),
+      arrow: p.loadImage('assets/icons/arrow.png')
     }
     effects_img = {
     }
     cards = portals.concat(numbers).concat(worlds);
+    cards = worlds;
     console.log(cards);
   }
 
