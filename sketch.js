@@ -1,4 +1,4 @@
-window.index = 16;
+window.index = 30;
 
 let rand_int = (max, min) => {
   min = min ? min : 0;
@@ -72,22 +72,38 @@ let chcol = (p, col) => {
 
 let effects = {
   must_validate: "Le joueur choisi doit valider une ruche.",
-  must_validate: "Chosen player must validate another beehive.",
+  // must_validate: "Chosen player must validate another beehive.",
   look_at: "Regardez une ruche.",
   reveal_hive: "Révélez une ruche.",
   move: "Déplacez des cartes d'une ruche vers une autre.",
   cure: "Enlevez l'un de vos frelons.",
   reveal_this: "Révélez cette carte.",
   gain_hornet: "Remportez un frelon.",
+  add_to_score: "Ajoutez cette carte à votre score."
 }
+
+let mv = effects.must_validate;
+let la = effects.look_at;
+let rh = effects.reveal_hive;
+let cure = effects.cure;
+let rvt = effects.reveal_this;
+let ats = effects.add_to_score;
+
 
 let trgs = {
   onc: "Collecte", 
   onk: "Garde",
-  onv: "Validated",
+  onv: "Collecte",
+  ons: "Division",
+}
+
+let trg_clr = {
+  "Division": colors.yellow,
+  "Collecte": colors.black
 }
 
 let mk = (trigger, effect) => {
+  if (effect == undefined) { return undefined }
   return {trigger: trigger, effect:effect}
 }
 
@@ -98,7 +114,7 @@ let mk2 = (trigger, effect) => {
 let bee = "🐝"
 
 let ablts = {
-  firefly: mk(trgs.onc, effects.reveal_this),
+  firefly: mk(trgs.ons, effects.reveal_this),
   onv_cure: mk(trgs.onc, effects.cure),
   onc_look_at: mk(trgs.onv, effects.look_at),
   onk_look_at: mk(trgs.onk, effects.look_at),
@@ -106,7 +122,7 @@ let ablts = {
   onc_must_validate: mk(trgs.onc, effects.must_validate),
   onc_reveal: mk(trgs.onc, effects.reveal_hive),
   onc_move: mk(trgs.onc, effects.move),
-  onk_gain_hornet: mk(trgs.onk, effects.gain_hornet),
+  ons_gain_hornet: mk(trgs.ons, effects.gain_hornet),
 }
 
 let draw_hex = (p, cx, cy, r) => {
@@ -151,7 +167,7 @@ let draw_effect = (p, card) => {
   let ofst = 30;
   let bg = white;
   let fg = black;
-  if (trigger == trgs.onc) { bg = colors.black; fg = white }
+  if (trigger == trgs.onv) { bg = colors.black; fg = white }
   else if (trigger == trgs.onk) { bg = colors.red }
   else { bg = colors.yellow }
   p.noFill();
@@ -264,6 +280,12 @@ let draw_frame = (p, card) => {
     chcol(p, black);
     p.text(card.points, bofst + 20, bofst + 10);
   }
+  if (card.effect) {
+    p.fill(trg_clr[card.effect.trigger].code);
+    p.stroke(trg_clr[card.effect.trigger].code);
+    ofst = 42;
+    draw_hex(p, w - bofst - ofst, bofst + ofst, 32);
+  }
 
   p.pop();
 }
@@ -284,18 +306,35 @@ let text = card => {
   }
 }
 
-let hornets = Array.from({length: 15})
-  .map(_ => ({kind: 'hornet', color: colors.red, points: "1"}));
+let hornets = Array.from({length: 18})
+  .map(_ => ({kind: 'hornet', color: colors.red}));
+hornets[0].effect = ablts.ons_gain_hornet;
 
-let black_bees = Array.from({length:15})
-  .map(_ => ({kind: 'black_bee', color: colors.black, points: "1"}));
+let black_effects = [la, la, mv, mv, rh, rh, cure, cure]
 
-let yellow_bees = Array.from({length:15})
+let black_bees = Array.from({length:10})
+  .map(_ => ({kind: 'black_bee', color: colors.black, points: "1"}))
+  .map((v, i) => {
+    let effect = mk(trgs.onv, black_effects[i]);
+    return {...v, effect}
+  })
+
+let yellow_effects = [la, la, rh, rh, mv, mv]
+
+let yellow_bees = Array.from({length:10})
   .map(_ => ({kind: 'yellow_bee', color: colors.yellow, points: "1"}))
+  .map((v, i) => {
+    let effect = mk(trgs.ons, yellow_effects[i]);
+    return {...v, effect};
+  })
 
-let fireflies = Array.from({length: 5})
+let fireflies = Array.from({length: 3})
   .map(_ => ({kind: 'firefly', color: colors.light_gray, points: "3",
     effect: ablts.firefly}));
+
+let lovebees = Array.from({length: 3})
+  .map(_ => ({kind: 'lovebee', color: colors.light_gray, points: "2",
+    effect: mk(trgs.ons, ats)}))
 
 let yellow_queens = Array.from({length: 5})
   .map(_ => ({kind: 'queen_bee', color: colors.yellow, points: "2/🐝"}))
@@ -303,23 +342,12 @@ let yellow_queens = Array.from({length: 5})
 let black_queens = Array.from({length: 5})
   .map(_ => ({kind: 'queen_bee', color: colors.black, points: "2/🐝"}))
 
-yellow_bees[0].effect = ablts.onv_cure;
-yellow_bees[1].effect = ablts.onc_reveal;
-yellow_bees[2].effect = ablts.onc_must_validate;
-yellow_bees[3].effect = ablts.onc_look_at;
-yellow_bees[4].effect = ablts.onc_look_at;
-yellow_bees[5].effect = ablts.onk_look_at;
 
-hornets[0].effect = ablts.onk_gain_hornet;
-black_bees[0].effect = ablts.onc_look_at;
-black_bees[1].effect = ablts.onv_must_validate;
-black_bees[2].effect = ablts.onk_look_at;
-black_bees[3].effect = ablts.onc_move;
-let cards = [hornets, black_bees, yellow_bees, fireflies, yellow_queens, black_queens].flat();
+let cards = [hornets, black_bees, yellow_bees, fireflies, lovebees, yellow_queens, black_queens].flat();
 
 const struct = p => {
   p.preload = () => {
-    font = p.loadFont("assets/rec-mono-regular.ttf");
+    font = p.loadFont("assets/rec-mono-regular-full.ttf");
     ifont = p.loadFont('assets/rec-mono-italic.ttf');
     icons = {
       skull: p.loadImage('assets/icons/skull.png')
