@@ -1,4 +1,4 @@
-window.index = 27;
+window.index = 16;
 
 let rand_int = (max, min) => {
   min = min ? min : 0;
@@ -32,13 +32,25 @@ let colorless = {
 }
 
 let colors = {
+  black: {
+    id: 'black',
+    code: "#3e3e3e"
+  },
+  red: {
+    id: 'red',
+    code: "#ff464c",
+  },
   blue: {
     id: 'blue',
     code: '#8eecf5'
   },
+  light_gray: {
+    id: "light-gray",
+    code: "#ccccdb"
+  },
   yellow: {
     id: 'yellow',
-    code: '#e9c46a'
+    code: '#eabc29'
   },
   pink: {
     id: 'pink',
@@ -58,168 +70,276 @@ let chcol = (p, col) => {
   p.stroke(col);
 }
 
-let suits = ['blue', 'green', 'yellow', 'pink']
-let order = ['inc', 'dec']
-let rules = {}
-for (let i = 0; i < suits.length; i++) {
-  for (let j = 0; j < order.length; j++) {
-    let id = `${suits[i]}-${order[j]}`;
-    let effect = `${order[j]}, atout ${suits[i]}`;
-    rules[id] = effect
+let effects = {
+  must_validate: "Le joueur choisi doit valider une ruche.",
+  must_validate: "Chosen player must validate another beehive.",
+  look_at: "Regardez une ruche.",
+  reveal_hive: "Révélez une ruche.",
+  move: "Déplacez des cartes d'une ruche vers une autre.",
+  cure: "Enlevez l'un de vos frelons.",
+  reveal_this: "Révélez cette carte.",
+  gain_hornet: "Remportez un frelon.",
+}
+
+let trgs = {
+  onc: "Collecte", 
+  onk: "Garde",
+  onv: "Validated",
+}
+
+let mk = (trigger, effect) => {
+  return {trigger: trigger, effect:effect}
+}
+
+let mk2 = (trigger, effect) => {
+  return {trigger: trgs[trigger], effect: effects[effect]}
+}
+
+let bee = "🐝"
+
+let ablts = {
+  firefly: mk(trgs.onc, effects.reveal_this),
+  onv_cure: mk(trgs.onc, effects.cure),
+  onc_look_at: mk(trgs.onv, effects.look_at),
+  onk_look_at: mk(trgs.onk, effects.look_at),
+  onv_must_validate: mk(trgs.onv, effects.must_validate),
+  onc_must_validate: mk(trgs.onc, effects.must_validate),
+  onc_reveal: mk(trgs.onc, effects.reveal_hive),
+  onc_move: mk(trgs.onc, effects.move),
+  onk_gain_hornet: mk(trgs.onk, effects.gain_hornet),
+}
+
+let draw_hex = (p, cx, cy, r) => {
+  p.beginShape();
+  for (let i = 0; i < 6; i++) {
+    const angle = p.TWO_PI * i / 6; // 0, 60°, 120°... (flat top)
+    const vx = cx + r * p.cos(angle);
+    const vy = cy + r * p.sin(angle);
+    p.vertex(vx, vy);
   }
-}
-let categories = ['flower', 'mountain', 'planet'];
-let numbers = 
-  categories.map(category => {
-    let obj = {category};
-    return [obj, obj, obj]
-  })
-  .flat()
-  .map((obj, i) => ({...obj, kind: 'number', num: i + 1}))
-  .map(v => suits.map(suit => ({...v, suit})))
-  .flat()
-
-
-let make_world = (id, name, effect, score) => {
-  effect = rules[effect];
-  score = scores[score];
-  return ({kind: 'world', id, name, effect, score})
+  p.endShape(p.CLOSE);
 }
 
-let make_world_ = (effect, score) =>
-  make_world("", "", effect, score)
 
-let worlds = ["+1", "+2", "+3", "-1"]
-  .map(delta => categories.map(c => ({delta, category: c, kind: 'world'})))
-  .flat()
-  .map((v, i) => ({...v, suit: suits[i%4]}))
-  .map((v, i) => ({...v, order: ['inc', 'inc', 'dec'][i%3]}))
-
-console.log(worlds);
-
-let portals =
-  suits.map(s => ({kind: 'portal', suit: s}))
-
-let draw_world = (p, card) => {
-  p.fill(colors[card.suit].code);
-  p.rect(0,0,w,h);
-  // p.stroke(white);
-  // p.rect(20, 20, w-40, h-40, 20);
-  p.textSize(70);
-  p.strokeWeight(4);
+let draw_cartouche = (p, text, color) => {
+  let x = 150;
+  let y = 750;
+  let bbox = font.textBounds(text, x, y);
+  let ofst = 10;
+  chcol(p, color);
+  p.rect(bbox.x - bbox.advance / 2 - ofst, bbox.y - ofst, bbox.w + ofst * 2, bbox.h + ofst * 2, 5);
   chcol(p, black);
-  p.textAlign(p.CENTER, p.TOP);
-  p.noFill();
-  let y = hh + 300;
-  let x = {
-    planet: hw - 200,
-    mountain: hw,
-    flower: hw + 200
-  }
-  p.imageMode(p.CENTER);
-  for (let category of Object.keys(x)) {
-    p.image(icons[category], x[category], y, 100, 100);
-  }
-  p.fill(black);
-  p.text(card.delta, x[card.category], y + 100);
-  p.imageMode(p.CENTER, p.CENTER);
-  p.image(icons[card.suit], 60, 60, 120, 120);
-  p.push();
-  p.translate(hw, hh - 100);
-  let b = (card.order == 'inc') ? -1 : 1;
-  let c = (card.order == 'inc') ? '>' : '<';
-  // p.rotate((p.PI / 2) * b);
-  // p.image(icons.arrow, 0, 0, 200, 200);
-  p.textAlign(p.CENTER, p.CENTER);
-  p.textSize(200);
-  p.text(c, 0, 0);
-  p.pop();
- }
+  p.text(text, x, y);
+}
 
-let draw_number = (p, card) => {
-  let code = colors[card.suit].code;
-  p.fill(code);
-  p.rect(0, 0, w, h);
+let draw_effect = (p, card) => {
   p.push();
-  chcol(p, white);
-  p.rect(0, 0, 150, 250, 0, 0, 20, 0);
-  p.rect(w-150, h-250, 150, 250, 20, 0, 0, 0);
+  let effect = card.effect.effect; card.effect ? card.effect.effect : "";
+  let trigger = card.effect.trigger
+  p.textSize(40);
+  let justified = justify_text(p, effect, 570, 5, 10, 50);
+  p.translate(100, 800);
+  if (card.kind == 'hornet')
+    p.translate(0, 150);
+  chcol(p, black);
+  for (let w of justified.words) {
+    p.text(w.word, w.x, w.y);
+    p.textFont(font);
+  }
+  let lh = 50;
+  let y = -70;
+  let ofst = 30;
+  let bg = white;
+  let fg = black;
+  if (trigger == trgs.onc) { bg = colors.black; fg = white }
+  else if (trigger == trgs.onk) { bg = colors.red }
+  else { bg = colors.yellow }
   p.noFill();
-  p.strokeWeight(50);
-  p.rect(0, 0, w, h, 50);
+  p.rect(-40, -70, 630, lh * (justified.line_nb + 1) + 60, 5);
+  p.fill(bg.code);
+  p.beginShape();
+  p.vertex(0, -70);
+  y -= ofst;
+  p.vertex(ofst, y);
+  p.vertex(300, y);
+  y += ofst;
+  p.vertex(300 + ofst, y);
+  y += ofst;
+  p.vertex(300, y);
+  p.vertex(ofst, y);
+  p.endShape(p.CLOSE);
+  p.textAlign(p.CENTER, p.CENTER);
+  chcol(p, fg);
+  p.text(trigger, (300 + ofst) / 2, y - ofst - 5)
   p.pop();
-  p.push();
-  chcol(p, 'black');
-  p.strokeWeight(5);
-  p.textSize(110);
-  let x = 40;
-  let y = 30;
-  p.textAlign(p.CENTER, p.TOP);
-  let txt = (card.num);
-  p.text(txt, 2*x, y);
-  p.imageMode(p.CORNER);
-  p.tint(code);
-  p.image(icons[card.suit], x - x / 2 , y + 100, 120, 120);
-  p.push()
-  p.translate(w - x, h - y);
-  p.rotate(p.PI);
-  p.textAlign(p.CENTER, p.TOP);
-  p.image(icons[card.suit], -x/2 , y + 70, 120, 120);
-  // p.textAlign(p.RIGHT, p.BOTTOM);
-  p.text(txt,x,0);
-  p.pop();
-  p.pop();
+}
+
+let draw_img = (p, card) => {
+  let offset = {
+    hornet: 0,
+    queen_bee: 40,
+    black_bee: 30,
+    yellow_bee: 30,
+    firefly: 20,
+  }[card.kind]
+  offset = offset ? offset : 0;
+  let code = card.kind;
+  if (code == 'queen_bee') {
+    code = `${card.color.id}_queen`;
+  }
+  let img = imgs[code];
   p.imageMode(p.CENTER);
-  p.image(icons[card.category], hw, hh, 300, 300);
+  if (img) {
+    p.image(img, hw + offset, hh - 40, 700, 700);
+  }
+}
+
+let draw_effect_icon = (p, card) => {
+  p.push();
+  if (card.kind == 'hornet') {
+    p.tint(colors.red.code);
+  }
+  p.pop();
+}
+
+let draw_hornet_points = (p, card) => {
+  chcol(p, black);
+  p.textSize(50);
+  let y = 100;
+  let pts = [1,3,6,9,12];
+  for (let i = 0; i < pts.length; ++i) {
+    y = 100 + i * 60;
+    p.text(pts[i], 60, y);
+  }
+  y += 30;
+  p.line(40, y, 140, y);
+}
+
+let draw_frame = (p, card) => {
+  p.push();
+  let ofst = 20;
+  let bofst = ofst + 20;
+  const r = 8;
+  const hex_h = p.sqrt(3) * r;    // hex height
+  const step_x= 1.5 * r;    // horizontal spacing between centers
+  const step_y = hex_h;          // vertical spacing between centers
+
+  // Start slightly before (and end slightly after) the canvas so edges are fully covered.
+  const cols = p.floor(w / step_x) + 1;
+  const rows = p.floor(h / step_y) + 1;
+
+  chcol(p, card.color.code);
+  p.rect(ofst, ofst, w - ofst * 2, h - ofst * 2, 20)
+  p.noFill(); 
+  p.stroke(white);
+
+  // cover canvas in hexagons
+  for (let col = -1; col < cols; col++) {
+    const x = col * step_x - 2;
+    const yOffset = (col % 2 === 0) ? 0 : hex_h / 2; // stagger every other column
+    for (let row = -1; row < rows; row++) {
+      const y = row * step_y + yOffset;
+      draw_hex(p, x, y, r);
+    }
+  }
+
+  chcol(p, white);
+  p.rect(bofst, bofst, w - bofst * 2, h - bofst * 2, 20)
+
+  if (card.kind == 'hornet') {
+    draw_hornet_points(p, card);
+  } else {
+    p.fill(white);
+    p.textAlign(p.LEFT, p.TOP);
+    p.textSize(60);
+    p.stroke(card.color.code);
+    p.push();
+    p.strokeWeight(5);
+    p.beginShape();
+    p.vertex(bofst, bofst - 10 + 100);
+    p.vertex(bofst + card.points.length * 30 + 60, bofst - 10 + 100);
+    p.endShape();
+    // p.rect(bofst - 10, bofst - 10, card.points.length * 30 + 60 , 100, 20);
+    p.pop();
+    chcol(p, black);
+    p.text(card.points, bofst + 20, bofst + 10);
+  }
+
+  p.pop();
 }
 
 let draw_card = (p, card) => {
-  if (card.kind == 'world') {
-    draw_world(p, card);
-  } else if (card.kind == 'number') {
-    draw_number(p, card);
-  } else if (card.kind == 'portal') {
-    p.push();
-    p.fill(colors[card.suit].code);
-    p.rect(0, 0, w, h);
-    chcol(p, black);
-    p.imageMode(p.CENTER, p.CENTER);
-    p.image(icons[card.suit], 60, 50, 120, 120);
-    p.image(icons.remote, hw, hh, 350, 350);
-    p.pop();
+  draw_frame(p, card);
+  draw_img(p, card);
+  if (card.effect) {
+    draw_effect(p, card);
+  }
+  draw_effect_icon(p, card);
+}
+
+let text = card => {
+  let obj = {
+    'firefly': "5pts / collecte: reveal it",
+    'queen-bee': "2 pts / abeille de la couleur"
   }
 }
 
+let hornets = Array.from({length: 15})
+  .map(_ => ({kind: 'hornet', color: colors.red, points: "1"}));
 
+let black_bees = Array.from({length:15})
+  .map(_ => ({kind: 'black_bee', color: colors.black, points: "1"}));
 
+let yellow_bees = Array.from({length:15})
+  .map(_ => ({kind: 'yellow_bee', color: colors.yellow, points: "1"}))
+
+let fireflies = Array.from({length: 5})
+  .map(_ => ({kind: 'firefly', color: colors.light_gray, points: "3",
+    effect: ablts.firefly}));
+
+let yellow_queens = Array.from({length: 5})
+  .map(_ => ({kind: 'queen_bee', color: colors.yellow, points: "2/🐝"}))
+
+let black_queens = Array.from({length: 5})
+  .map(_ => ({kind: 'queen_bee', color: colors.black, points: "2/🐝"}))
+
+yellow_bees[0].effect = ablts.onv_cure;
+yellow_bees[1].effect = ablts.onc_reveal;
+yellow_bees[2].effect = ablts.onc_must_validate;
+yellow_bees[3].effect = ablts.onc_look_at;
+yellow_bees[4].effect = ablts.onc_look_at;
+yellow_bees[5].effect = ablts.onk_look_at;
+
+hornets[0].effect = ablts.onk_gain_hornet;
+black_bees[0].effect = ablts.onc_look_at;
+black_bees[1].effect = ablts.onv_must_validate;
+black_bees[2].effect = ablts.onk_look_at;
+black_bees[3].effect = ablts.onc_move;
+let cards = [hornets, black_bees, yellow_bees, fireflies, yellow_queens, black_queens].flat();
 
 const struct = p => {
   p.preload = () => {
-    font = p.loadFont("assets/Raleway-variable.ttf");
+    font = p.loadFont("assets/rec-mono-regular.ttf");
+    ifont = p.loadFont('assets/rec-mono-italic.ttf');
     icons = {
-      planet: p.loadImage('assets/icons/planet.png'),
-      mountain: p.loadImage('assets/icons/mountain.png'),
-      flower: p.loadImage('assets/icons/flower.png'),
-      remote: p.loadImage('assets/icons/remote.png'),
-      pink: p.loadImage('assets/icons/purple.png'),
-      blue: p.loadImage('assets/icons/blue.png'),
-      yellow: p.loadImage('assets/icons/yellow.png'),
-      green: p.loadImage('assets/icons/green.png'),
-    } 
-   
-    effects_img = {
+      skull: p.loadImage('assets/icons/skull.png')
+    };
+    imgs = {
+      black_bee: p.loadImage('assets/black-bee.png'),
+      yellow_bee: p.loadImage('assets/yellow-bee.png'),
+      hornet: p.loadImage('assets/hornet.png'),
+      black_queen: p.loadImage('assets/black-queen.png'),
+      yellow_queen: p.loadImage('assets/yellow-queen.png'),
+      firefly: p.loadImage('assets/firefly.png')
     }
-    cards = portals.concat(numbers).concat(worlds);
     console.log(cards);
   }
 
   p.setup = () => {
-    icons.pink.filter(p.INVERT);
-    icons.yellow.filter(p.INVERT);
-    icons.green.filter(p.INVERT);
-    icons.blue.filter(p.INVERT);
-
+    p.frameRate(3);
+    p.textFont(font);
     p.createCanvas(w, h);
+    icons.skull.filter(p.INVERT);
     gray = p.color(170, 170, 170);
     gray.setAlpha(200);
     trwhite = p.color(0xff,0xff,0xff, 200);
