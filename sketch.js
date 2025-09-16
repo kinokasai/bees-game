@@ -1,4 +1,4 @@
-window.index = 30;
+window.index = 0
 
 let rand_int = (max, min) => {
   min = min ? min : 0;
@@ -12,7 +12,7 @@ let incl_arr = (s, arr) => {
 }
 let w = 750;
 let h = 1050;
-let hw = w /2;
+let hw = w / 2;
 let hh = h / 2;
 
 let opt_map = (v, clbk) => {
@@ -59,6 +59,10 @@ let colors = {
   green: {
     id: 'green',
     code: '#b9fbc0'
+  },
+  brown: {
+    id: 'brown',
+    code: "#804d00"
   }
 }
 
@@ -76,39 +80,42 @@ let effects = {
   look_at: "Regardez une ruche.",
   reveal_hive: "Révélez une ruche.",
   move: "Déplacez des cartes d'une ruche vers une autre.",
-  cure: "Enlevez l'un de vos frelons.",
+  cure: "Apprivoisez l'un de vos frelons.",
   reveal_this: "Révélez cette carte.",
-  gain_hornet: "Remportez un frelon.",
-  add_to_score: "Ajoutez cette carte à votre score."
+  gain_hornet: "Remportez ce frelon.",
+  add_to_score: "Ajoutez cette carte à votre score.",
+  lose: "Perdez cette manche.",
+  next_hornet_friend: "Le prochain frelon que vous remportez arrive apprivoisé.",
+  reveal_card: "Révélez la première carte d'une ruche."
 }
 
 let mv = effects.must_validate;
 let la = effects.look_at;
 let rh = effects.reveal_hive;
+let rc = effects.reveal_card;
 let cure = effects.cure;
 let rvt = effects.reveal_this;
 let ats = effects.add_to_score;
+let nhf = effects.next_hornet_friend;
 
 
 let trgs = {
-  onc: "Collecte", 
-  onk: "Garde",
   onv: "Collecte",
-  ons: "Division",
+  ons: "Regard",
 }
 
 let trg_clr = {
-  "Division": colors.yellow,
+  "Regard": colors.yellow,
   "Collecte": colors.black
 }
 
 let mk = (trigger, effect) => {
   if (effect == undefined) { return undefined }
-  return {trigger: trigger, effect:effect}
+  return { trigger: trigger, effect: effect }
 }
 
 let mk2 = (trigger, effect) => {
-  return {trigger: trgs[trigger], effect: effects[effect]}
+  return { trigger: trgs[trigger], effect: effects[effect] }
 }
 
 let bee = "🐝"
@@ -222,7 +229,7 @@ let draw_hornet_points = (p, card) => {
   chcol(p, black);
   p.textSize(50);
   let y = 100;
-  let pts = [1,3,6,9,12];
+  let pts = [1, 3, 6, 9, 12];
   for (let i = 0; i < pts.length; ++i) {
     y = 100 + i * 60;
     p.text(pts[i], 60, y);
@@ -231,13 +238,15 @@ let draw_hornet_points = (p, card) => {
   p.line(40, y, 140, y);
 }
 
+// let second_points = (p, 
+
 let draw_frame = (p, card) => {
   p.push();
   let ofst = 20;
   let bofst = ofst + 20;
   const r = 8;
   const hex_h = p.sqrt(3) * r;    // hex height
-  const step_x= 1.5 * r;    // horizontal spacing between centers
+  const step_x = 1.5 * r;    // horizontal spacing between centers
   const step_y = hex_h;          // vertical spacing between centers
 
   // Start slightly before (and end slightly after) the canvas so edges are fully covered.
@@ -246,7 +255,7 @@ let draw_frame = (p, card) => {
 
   chcol(p, card.color.code);
   p.rect(ofst, ofst, w - ofst * 2, h - ofst * 2, 20)
-  p.noFill(); 
+  p.noFill();
   p.stroke(white);
 
   // cover canvas in hexagons
@@ -262,23 +271,40 @@ let draw_frame = (p, card) => {
   chcol(p, white);
   p.rect(bofst, bofst, w - bofst * 2, h - bofst * 2, 20)
 
-  if (card.kind == 'hornet') {
-    draw_hornet_points(p, card);
+
+  p.fill(white);
+  p.textAlign(p.LEFT, p.TOP);
+  p.textSize(60);
+  p.stroke(card.color.code);
+  p.push();
+  p.strokeWeight(5);
+  p.beginShape();
+  p.vertex(bofst, bofst - 10 + 100);
+  p.vertex(bofst + card.points.length * 30 + 60, bofst - 10 + 100);
+  p.endShape();
+  // p.rect(bofst - 10, bofst - 10, card.points.length * 30 + 60 , 100, 20);
+  p.pop();
+  chcol(p, black);
+  let bonus_points = (pts, emoji) => {
+    p.textSize(40);
+    p.text(pts, bofst + 20, bofst + 100);
+    p.textFont("Noto Color Emoji");
+    p.textSize(35);
+    p.text(emoji, bofst + 95, bofst + 110);
+  }
+  if (card.kind == 'queen_bee') {
+    p.text("+1/", bofst + 20, bofst + 10);
+    p.textFont("Noto Color Emoji");
+    p.textSize(50);
+    chcol(p, card.color.code);
+    p.text("🐝", bofst + 130, bofst + 25);
   } else {
-    p.fill(white);
-    p.textAlign(p.LEFT, p.TOP);
-    p.textSize(60);
-    p.stroke(card.color.code);
-    p.push();
-    p.strokeWeight(5);
-    p.beginShape();
-    p.vertex(bofst, bofst - 10 + 100);
-    p.vertex(bofst + card.points.length * 30 + 60, bofst - 10 + 100);
-    p.endShape();
-    // p.rect(bofst - 10, bofst - 10, card.points.length * 30 + 60 , 100, 20);
-    p.pop();
-    chcol(p, black);
     p.text(card.points, bofst + 20, bofst + 10);
+    if (card.kind == 'roach_queen') {
+      bonus_points("+2/", "🪳")
+    } else if (card.kind == 'roach-hornet-friend') {
+      bonus_points("+2/", "🐝💢");
+    }
   }
   if (card.effect) {
     p.fill(trg_clr[card.effect.trigger].code);
@@ -306,44 +332,73 @@ let text = card => {
   }
 }
 
-let hornets = Array.from({length: 18})
-  .map(_ => ({kind: 'hornet', color: colors.red}));
-hornets[0].effect = ablts.ons_gain_hornet;
+let hornets = Array.from({ length: 17 })
+  .map(_ => ({ kind: 'hornet', color: colors.red, points: "0" }));
+hornets[0].points = '?'
+hornets[1].effect = ablts.ons_gain_hornet;
 
-let black_effects = [la, la, mv, mv, rh, rh, cure, cure]
+let hornet_king = ({
+  kind: 'hornet', color: colors.red, points: "4",
+  effect: mk(trgs.onv, effects.lose)
+});
 
-let black_bees = Array.from({length:10})
-  .map(_ => ({kind: 'black_bee', color: colors.black, points: "1"}))
+hornets = [...hornets, hornet_king];
+
+let black_effects = [la, la, mv, mv, rh, rh]
+
+let black_bees = Array.from({ length: 9 })
+  .map(_ => ({ kind: 'black_bee', color: colors.black, points: "1" }))
   .map((v, i) => {
     let effect = mk(trgs.onv, black_effects[i]);
-    return {...v, effect}
+    return { ...v, effect }
   })
 
-let yellow_effects = [la, la, rh, rh, mv, mv]
+let yellow_effects = [la, la, rc, rc, mv, mv, ats, ats]
 
-let yellow_bees = Array.from({length:10})
-  .map(_ => ({kind: 'yellow_bee', color: colors.yellow, points: "1"}))
+let yellow_bees = Array.from({ length: 8 })
+  .map(_ => ({ kind: 'yellow_bee', color: colors.yellow, points: "1" }))
   .map((v, i) => {
     let effect = mk(trgs.ons, yellow_effects[i]);
-    return {...v, effect};
+    return { ...v, effect };
   })
+yellow_bees[7].points = '?'
 
-let fireflies = Array.from({length: 3})
-  .map(_ => ({kind: 'firefly', color: colors.light_gray, points: "3",
-    effect: ablts.firefly}));
+let cool_bee = [{ kind: "cool_bee", color: colors.yellow, points: "6" }]
 
-let lovebees = Array.from({length: 3})
-  .map(_ => ({kind: 'lovebee', color: colors.light_gray, points: "2",
-    effect: mk(trgs.ons, ats)}))
+let fireflies = Array.from({ length: 3 })
+  .map(_ => ({
+    kind: 'firefly', color: colors.light_gray, points: "3",
+    effect: ablts.firefly
+  }));
 
-let yellow_queens = Array.from({length: 5})
-  .map(_ => ({kind: 'queen_bee', color: colors.yellow, points: "2/🐝"}))
+let lovebees = Array.from({ length: 3 })
+  .map(_ => ({
+    kind: 'lovebee', color: colors.light_gray, points: "2",
+    effect: mk(trgs.ons, ats)
+  }))
 
-let black_queens = Array.from({length: 5})
-  .map(_ => ({kind: 'queen_bee', color: colors.black, points: "2/🐝"}))
+let yellow_queens = Array.from({ length: 3 })
+  .map(_ => ({ kind: 'queen_bee', color: colors.yellow, points: "1/🐝" }))
+
+let black_queens = Array.from({ length: 3 })
+  .map(_ => ({ kind: 'queen_bee', color: colors.black, points: "1/🐝" }))
+
+let roaches_effects = [ats, ats, cure, cure, nhf, nhf]
+let triggers = [trgs.ons, trgs.ons, trgs.onv, trgs.onv, trgs.onv, trgs.onv]
+
+let roaches = Array.from({ length: 10 })
+  .map(_ => ({ kind: 'roach', color: colors.brown, points: "-1" }))
+  .map((v, i) => ({ ...v, effect: mk(triggers[i], roaches_effects[i]) }))
+roaches[9].points = "?";
+
+let roach_hornet = [{ kind: 'roach-hornet-friend', color: colors.brown, points: "-1" }]
+
+let roach_queen = Array.from({ length: 1 })
+  .map(_ => ({ kind: 'roach_queen', color: colors.brown, points: "-2" }))
 
 
-let cards = [hornets, black_bees, yellow_bees, fireflies, lovebees, yellow_queens, black_queens].flat();
+let cards = [hornets, black_bees, yellow_bees, roaches, roach_queen, roach_hornet, yellow_queens,
+  black_queens, cool_bee].flat();
 
 const struct = p => {
   p.preload = () => {
@@ -360,7 +415,6 @@ const struct = p => {
       yellow_queen: p.loadImage('assets/yellow-queen.png'),
       firefly: p.loadImage('assets/firefly.png')
     }
-    console.log(cards);
   }
 
   p.setup = () => {
@@ -370,11 +424,11 @@ const struct = p => {
     icons.skull.filter(p.INVERT);
     gray = p.color(170, 170, 170);
     gray.setAlpha(200);
-    trwhite = p.color(0xff,0xff,0xff, 200);
+    trwhite = p.color(0xff, 0xff, 0xff, 200);
     trsprt = p.color(0, 0, 0, 255);
     // p.textFont(font);
     bufs = [p.createGraphics(w, h),
-      p.createGraphics(w, h)]
+    p.createGraphics(w, h)]
 
   };
 
@@ -383,7 +437,12 @@ const struct = p => {
     // let color = fam_colors[card.family]
     p.fill(white);
     p.rect(0, 0, w, h);
-    draw_card(p,card);
+    draw_card(p, card);
+    p.push();
+    chcol(p, black);
+    p.textAlign(p.RIGHT, p.BOTTOM);
+    p.text(window.index, w, h)
+    p.pop();
   }
 
 
